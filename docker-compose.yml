@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Builder service - Builds the Linux distribution
+  # =============================================================================
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        - LINUX_VERSION=master
+        - BUSYBOX_VERSION=master
+        - SYSLINUX_VERSION=6.04-pre1
+        - BUILD_JOBS=auto
+    image: handbuilt-linux:latest
+    container_name: handbuilt-linux-builder
+    volumes:
+      # Mount output directory for extracting artifacts
+      - ./output:/output
+      # Mount source configurations for easy editing
+      - ./linux.config:/distro/linux.config:ro
+      - ./busybox.config:/distro/busybox.config:ro
+    environment:
+      - DISTRO_HOME=/distro
+    command: >
+      bash -c "
+        echo 'Copying build artifacts to /output...' &&
+        mkdir -p /output &&
+        cp /distro/output.iso /output/output.iso &&
+        cp /distro/bzImage /output/bzImage &&
+        cp /distro/initramfs /output/initramfs &&
+        echo 'Build artifacts copied to ./output/' &&
+        echo 'ISO: ./output/output.iso' &&
+        echo 'Kernel: ./output/bzImage' &&
+        echo 'Initramfs: ./output/initramfs'
+      "
+    networks:
+      - handbuilt-linux-net
+
+  # =============================================================================
+  # Development service - Interactive shell for development
+  # =============================================================================
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: handbuilt-linux:latest
+    container_name: handbuilt-linux-dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./output:/output
+      - ./scripts:/distro/scripts:ro
+    environment:
+      - DISTRO_HOME=/distro
+      - PS1=\[\033[1;32m\]handbuilt-linux-dev\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$
+    working_dir: /distro
+    command: /bin/bash
+    networks:
+      - handbuilt-linux-net
+    profiles:
+      - dev
+
+  # =============================================================================
+  # Test service - Runs QEMU for testing
+  # =============================================================================
+  qemu:
+    image: tianon/qemu
+    container_name: handbuilt-linux-qemu
+    privileged: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./output:/images:ro
+    command: >
+      qemu-system-x86_64
+        -cdrom /images/output.iso
+        -m 512M
+        -nographic
+    networks:
+      - handbuilt-linux-net
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+    profiles:
+      - test
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  handbuilt-linux-net:
+    driver: bridge
+    name: handbuilt-linux-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  output:
+    name: handbuilt-linux-output
