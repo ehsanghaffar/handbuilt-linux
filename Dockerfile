@@ -138,10 +138,11 @@ WORKDIR /build/busybox
 # - If oldconfig isn't available or fails, fall back to defconfig
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN if [ -f .config ]; then \
-    # Try non-interactive oldconfig (accept defaults); if not supported/fails, fall back
-    if ! (yes "" | make oldconfig); then make defconfig; fi; \
+      if ! (yes "" | make oldconfig); then \
+        make defconfig; \
+      fi; \
     else \
-    make defconfig; \
+      make defconfig; \
     fi && \
     make -j"${BUILD_JOBS:-$(nproc)}" && \
     make CONFIG_PREFIX=/build/initramfs install && \
