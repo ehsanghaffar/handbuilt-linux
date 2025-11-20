@@ -150,7 +150,7 @@ COPY busybox.config /build/busybox/.config
 # Build and install BusyBox
 WORKDIR /build/busybox
 RUN if [ -f .config ]; then \
-        make olddefconfig; \
+        make olddefconfig || make defconfig; \
     else \
         make defconfig; \
     fi && \
