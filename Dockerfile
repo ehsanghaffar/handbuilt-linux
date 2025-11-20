@@ -95,13 +95,25 @@ RUN --mount=type=cache,target=/build/cache \
 # Download and extract Syslinux
 # Note: Using alternative download locations due to mirror availability
 WORKDIR /build/sources
-RUN curl -fsSL -o syslinux.tar.gz \
-        "https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.gz" || \
-    curl -fsSL -o syslinux.tar.gz \
-        "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.gz" && \
-    tar xzf syslinux.tar.gz && \
-    rm syslinux.tar.gz && \
-    mv syslinux-* syslinux
+RUN set -eux; \
+    tried=0; \
+    for url in \
+        "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.gz" \
+        "https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.gz" \
+        "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/${SYSLINUX_VERSION}/syslinux-${SYSLINUX_VERSION}.tar.gz"; do \
+        echo "Trying $url"; \
+        if curl -fsSL -o syslinux.tar.gz "$url"; then \
+            tried=1; \
+            break; \
+        else \
+            echo "Failed to download from $url"; \
+        fi; \
+    done; \
+    if [ "$tried" -ne 1 ]; then \
+        echo "ERROR: Unable to download syslinux ${SYSLINUX_VERSION}" >&2; \
+        exit 22; \
+    fi; \
+    tar xzf syslinux.tar.gz && rm syslinux.tar.gz && mv "syslinux-${SYSLINUX_VERSION}" syslinux
 
 # -----------------------------------------------------------------------------
 # Stage 3: Build Linux kernel
