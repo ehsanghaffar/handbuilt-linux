@@ -61,38 +61,40 @@ WORKDIR /build
 # -----------------------------------------------------------------------------
 FROM builder-base AS source-downloader
 
-ARG LINUX_VERSION
-ARG BUSYBOX_VERSION
-ARG SYSLINUX_VERSION
+ARG LINUX_VERSION=master
+ARG BUSYBOX_VERSION=master
+ARG SYSLINUX_VERSION=6.04-pre1
 
 # Create directory structure
-RUN mkdir -p /build/{initramfs,myiso/isolinux,sources}
+RUN mkdir -p /build/initramfs && \
+    mkdir -p /build/myiso/isolinux && \
+    mkdir -p /build/sources
 
 # Download Linux kernel source
+WORKDIR /build/sources
 RUN --mount=type=cache,target=/build/cache \
-    cd /build/sources && \
     if [ ! -f /build/cache/linux/.git/config ]; then \
-        git clone --depth 1 --branch ${LINUX_VERSION} \
+        git clone --depth 1 \
             https://github.com/torvalds/linux.git linux && \
-        cp -r linux /build/cache/; \
+        cp -r linux /build/cache/linux; \
     else \
-        cp -r /build/cache/linux .; \
+        cp -r /build/cache/linux linux; \
     fi
 
 # Download BusyBox source
+WORKDIR /build/sources
 RUN --mount=type=cache,target=/build/cache \
-    cd /build/sources && \
     if [ ! -f /build/cache/busybox/.git/config ]; then \
-        git clone --depth 1 --branch ${BUSYBOX_VERSION} \
+        git clone --depth 1 \
             https://git.busybox.net/busybox busybox && \
-        cp -r busybox /build/cache/; \
+        cp -r busybox /build/cache/busybox; \
     else \
-        cp -r /build/cache/busybox .; \
+        cp -r /build/cache/busybox busybox; \
     fi
 
 # Download and extract Syslinux
-RUN cd /build/sources && \
-    curl -fsSL -o syslinux.tar.gz \
+WORKDIR /build/sources
+RUN curl -fsSL -o syslinux.tar.gz \
         "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/${SYSLINUX_VERSION}/syslinux-${SYSLINUX_VERSION}.tar.gz" && \
     tar xzf syslinux.tar.gz && \
     rm syslinux.tar.gz && \
@@ -115,7 +117,7 @@ COPY linux.config /build/linux/.config
 WORKDIR /build/linux
 RUN make olddefconfig && \
     make -j"${BUILD_JOBS:-$(nproc)}" && \
-    strip --strip-debug arch/x86/boot/bzImage 2>/dev/null || true
+    (strip --strip-debug arch/x86/boot/bzImage 2>/dev/null || true)
 
 # -----------------------------------------------------------------------------
 # Stage 4: Build BusyBox
@@ -151,6 +153,7 @@ RUN chmod +x /build/initramfs/init
 
 # Create initramfs archive
 WORKDIR /build/initramfs
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN find . -print0 | cpio --null --create --format=newc | gzip -9 > /build/initramfs.cpio.gz
 
 # -----------------------------------------------------------------------------
@@ -168,6 +171,7 @@ COPY --from=kernel-builder /build/linux/arch/x86/boot/bzImage /build/myiso/bzIma
 COPY --from=initramfs-builder /build/initramfs.cpio.gz /build/myiso/initramfs
 
 # Copy syslinux bootloader files
+WORKDIR /build
 RUN cp /build/syslinux/bios/core/isolinux.bin /build/myiso/isolinux/ && \
     cp /build/syslinux/bios/com32/elflink/ldlinux/ldlinux.c32 /build/myiso/isolinux/
 
