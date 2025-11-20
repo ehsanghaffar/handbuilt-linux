@@ -1,0 +1,44 @@
+# Build artifacts
+*.iso
+*.img
+bzImage
+initramfs
+initramfs.cpio
+initramfs.cpio.gz
+output.iso
+boot.img
+
+# Directories
+mnt/
+myiso/
+initramfs/
+build/
+dist/
+output/
+artifacts/
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.dockerignore
+
+# CI/CD
+.github/
+
+# Scripts (add selectively)
+scripts/
+
+# Logs
+*.log
+logs/
