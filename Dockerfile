@@ -133,47 +133,49 @@ COPY busybox.config /build/busybox/.config
 
 WORKDIR /build/busybox
 
-# Use a robust config step:
-# - If a .config exists, prefer to run oldconfig (accept defaults automatically)
-# - If oldconfig isn't available or fails, fall back to defconfig
+# Use a robust config, build, install; create an explicit tarball artifact and verify it
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN set -eux; \
-        mkdir -p /build/initramfs; \
-        # prefer existing .config, accept defaults non-interactively if present
-        if [ -f .config ]; then \
-            if ! yes "" | make oldconfig; then \
-                make defconfig; \
-            fi; \
-        else \
-            make defconfig; \
-        fi; \
-        # build
-        make -j"${BUILD_JOBS:-$(nproc)}"; \
-        # install into explicit path
-        make CONFIG_PREFIX=/build/initramfs install; \
-        # sanity checks — fail early with diagnostics if artifacts missing
-        if [ ! -x /build/initramfs/bin/busybox ]; then \
-            echo "ERROR: busybox install did not produce /build/initramfs/bin/busybox"; \
-            echo "workspace /build contents:"; ls -la /build || true; \
-            echo "busybox tree:"; ls -la /build/initramfs || true; \
-            exit 1; \
-        fi; \
-        # shrink binary if possible (non-fatal)
-        strip --strip-all /build/initramfs/bin/busybox || true; \
-        # make a tarball artifact to make COPY from BuildKit more robust
-        tar -C /build -czf /build/initramfs.tar.gz initramfs
+    mkdir -p /build/initramfs; \
+    # configure (prefer existing .config, accept defaults non-interactively)
+    if [ -f .config ]; then \
+      if ! yes "" | make oldconfig; then \
+        make defconfig; \
+      fi; \
+    else \
+      make defconfig; \
+    fi; \
+    # build
+    make -j"${BUILD_JOBS:-$(nproc)}"; \
+    # install into explicit path
+    make CONFIG_PREFIX=/build/initramfs install; \
+    # sanity checks — fail early with diagnostics if artifacts missing
+    if [ ! -x /build/initramfs/bin/busybox ]; then \
+      echo "ERROR: busybox install did not produce /build/initramfs/bin/busybox"; \
+      echo "workspace /build contents:"; ls -la /build || true; \
+      echo "busybox tree:"; ls -la /build/initramfs || true; \
+      exit 1; \
+    fi; \
+    # shrink binary if possible (non-fatal)
+    strip --strip-all /build/initramfs/bin/busybox || true; \
+    # create a single tarball artifact for reliable COPY by BuildKit
+    tar -C /build -czf /build/initramfs.tar.gz initramfs; \
+    ls -la /build/initramfs.tar.gz
 
 # -----------------------------------------------------------------------------
 # Stage: initramfs-builder
 # -----------------------------------------------------------------------------
 FROM builder-base AS initramfs-builder
 
-# Copy the tarball artifact from busybox-builder and extract it atomically
+# Copy the tarball artifact and extract it, then add/overwrite init
 COPY --from=busybox-builder /build/initramfs.tar.gz /build/initramfs.tar.gz
-RUN set -eux; \
-    tar -C /build -xzf /build/initramfs.tar.gz && rm /build/initramfs.tar.gz
 
-# Add the init script into the extracted initramfs and make executable
+WORKDIR /build
+RUN set -eux; \
+    mkdir -p /build; \
+    tar -C /build -xzf /build/initramfs.tar.gz && rm /build/initramfs.tar.gz; \
+    ls -la /build/initramfs
+
 COPY init.sh /build/initramfs/init
 RUN chmod +x /build/initramfs/init
 
