@@ -45,6 +45,7 @@ A minimal, customizable Linux distribution built from scratch using the Linux ke
 - Linux system (Debian/Ubuntu recommended)
 - Build tools: `gcc`, `make`, `bison`, `flex`
 - Additional packages:
+
   ```bash
   sudo apt-get install build-essential libncurses-dev bison flex \
     libssl-dev libelf-dev bc cpio git wget curl syslinux \
@@ -56,22 +57,26 @@ A minimal, customizable Linux distribution built from scratch using the Linux ke
 ### Using Docker (Recommended)
 
 1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/yourusername/handbuilt-linux.git
+   git clone https://github.com/ehsanghaffar/handbuilt-linux.git
    cd handbuilt-linux
    ```
 
 2. **Build the distribution**
+
    ```bash
    docker build -t handbuilt-linux .
    ```
 
 3. **Extract the ISO**
+
    ```bash
    docker run --rm handbuilt-linux cat /distro/output.iso > output.iso
    ```
 
 4. **Test with QEMU**
+
    ```bash
    qemu-system-x86_64 -cdrom output.iso -m 512M
    ```
@@ -124,11 +129,13 @@ sudo sync
 ### Running with QEMU
 
 **Boot from ISO:**
+
 ```bash
 qemu-system-x86_64 -cdrom output.iso -m 512M
 ```
 
 **Boot from kernel and initramfs directly:**
+
 ```bash
 qemu-system-x86_64 \
   -kernel bzImage \
@@ -139,6 +146,7 @@ qemu-system-x86_64 \
 ```
 
 **With networking:**
+
 ```bash
 qemu-system-x86_64 \
   -cdrom output.iso \
@@ -191,7 +199,7 @@ grep, sed, awk, sort, uniq, head, tail
 
 ## 📁 Project Structure
 
-```
+```bash
 handbuilt-linux/
 ├── Dockerfile              # Multi-stage Docker build
 ├── docker-compose.yml      # Docker Compose configuration
@@ -253,6 +261,7 @@ cp .config /work/busybox.config
 ### Init System
 
 Modify `init.sh` to customize:
+
 - Hostname
 - Mounted filesystems
 - Network configuration
@@ -262,6 +271,7 @@ Modify `init.sh` to customize:
 ### Bootloader
 
 Modify `syslinux.cfg` to customize:
+
 - Boot timeout
 - Kernel parameters
 - Boot menu options
@@ -327,18 +337,21 @@ EOF
 ### Common Issues
 
 **Build fails with "out of space" error:**
+
 ```bash
 # Increase Docker disk space or clean up
 docker system prune -a
 ```
 
 **QEMU shows black screen:**
+
 ```bash
 # Use serial console
 qemu-system-x86_64 -cdrom output.iso -nographic
 ```
 
 **Kernel panic on boot:**
+
 ```bash
 # Check initramfs was created correctly
 file initramfs
@@ -346,6 +359,7 @@ file initramfs
 ```
 
 **Permission denied when mounting:**
+
 ```bash
 # Run build.sh with sudo
 sudo ./build.sh
@@ -396,7 +410,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Create an issue for bug reports
 - Start a discussion for questions
 - Check existing issues before creating new ones
-
----
-
-**Built with ❤️ by the handbuilt-linux community**
