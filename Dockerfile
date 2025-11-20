@@ -20,25 +20,25 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
     apt-get install -yq --no-install-recommends \
-        build-essential \
-        bzip2 \
-        git \
-        make \
-        gcc \
-        libncurses-dev \
-        flex \
-        bison \
-        bc \
-        cpio \
-        libelf-dev \
-        libssl-dev \
-        syslinux-common \
-        dosfstools \
-        genisoimage \
-        wget \
-        curl \
-        ca-certificates \
-        xz-utils && \
+    build-essential \
+    bzip2 \
+    git \
+    make \
+    gcc \
+    libncurses-dev \
+    flex \
+    bison \
+    bc \
+    cpio \
+    libelf-dev \
+    libssl-dev \
+    syslinux-common \
+    dosfstools \
+    genisoimage \
+    wget \
+    curl \
+    ca-certificates \
+    xz-utils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -63,22 +63,22 @@ WORKDIR /build/sources
 # Clone Linux (shallow, branch/tag from ARG)
 RUN --mount=type=cache,target=/build/cache \
     if [ ! -d /build/cache/linux ]; then \
-        git clone --depth 1 --branch "${LINUX_VERSION}" https://github.com/torvalds/linux.git linux || \
-        git clone --depth 1 https://github.com/torvalds/linux.git linux; \
-        cp -r linux /build/cache/linux; \
+    git clone --depth 1 --branch "${LINUX_VERSION}" https://github.com/torvalds/linux.git linux || \
+    git clone --depth 1 https://github.com/torvalds/linux.git linux; \
+    cp -r linux /build/cache/linux; \
     else \
-        cp -r /build/cache/linux linux; \
+    cp -r /build/cache/linux linux; \
     fi
 
 # Clone BusyBox (shallow, branch/tag from ARG)
 WORKDIR /build/sources
 RUN --mount=type=cache,target=/build/cache \
     if [ ! -d /build/cache/busybox ]; then \
-        git clone --depth 1 --branch "${BUSYBOX_VERSION}" https://git.busybox.net/busybox busybox || \
-        git clone --depth 1 https://git.busybox.net/busybox busybox; \
-        cp -r busybox /build/cache/busybox; \
+    git clone --depth 1 --branch "${BUSYBOX_VERSION}" https://git.busybox.net/busybox busybox || \
+    git clone --depth 1 https://git.busybox.net/busybox busybox; \
+    cp -r busybox /build/cache/busybox; \
     else \
-        cp -r /build/cache/busybox busybox; \
+    cp -r /build/cache/busybox busybox; \
     fi
 
 # Download and extract Syslinux (tries multiple URLs)
@@ -86,20 +86,20 @@ WORKDIR /build/sources
 RUN set -eux; \
     tried=0; \
     for url in \
-        "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.gz" \
-        "https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.gz" \
-        "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/${SYSLINUX_VERSION}/syslinux-${SYSLINUX_VERSION}.tar.gz"; do \
-        echo "Trying $url"; \
-        if curl -fsSL -o syslinux.tar.gz "$url"; then \
-            tried=1; \
-            break; \
-        else \
-            echo "Failed to download from $url"; \
-        fi; \
+    "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.gz" \
+    "https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-${SYSLINUX_VERSION}.tar.gz" \
+    "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/Testing/${SYSLINUX_VERSION}/syslinux-${SYSLINUX_VERSION}.tar.gz"; do \
+    echo "Trying $url"; \
+    if curl -fsSL -o syslinux.tar.gz "$url"; then \
+    tried=1; \
+    break; \
+    else \
+    echo "Failed to download from $url"; \
+    fi; \
     done; \
     if [ "$tried" -ne 1 ]; then \
-        echo "ERROR: Unable to download syslinux ${SYSLINUX_VERSION}" >&2; \
-        exit 22; \
+    echo "ERROR: Unable to download syslinux ${SYSLINUX_VERSION}" >&2; \
+    exit 22; \
     fi; \
     tar xzf syslinux.tar.gz && rm syslinux.tar.gz && mv "syslinux-${SYSLINUX_VERSION}" syslinux
 
@@ -137,10 +137,10 @@ WORKDIR /build/busybox
 # - If a .config exists, prefer to run oldconfig (accept defaults automatically)
 # - If oldconfig isn't available or fails, fall back to defconfig
 RUN if [ -f .config ]; then \
-        # Try non-interactive oldconfig (accept defaults); if not supported/fails, fall back
-        (yes "" | make oldconfig) || make defconfig; \
+    # Try non-interactive oldconfig (accept defaults); if not supported/fails, fall back
+    (yes "" | make oldconfig) || make defconfig; \
     else \
-        make defconfig; \
+    make defconfig; \
     fi && \
     make -j"${BUILD_JOBS:-$(nproc)}" && \
     make CONFIG_PREFIX=/build/initramfs install && \
@@ -207,8 +207,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
     apt-get install -yq --no-install-recommends \
-        qemu-system-x86 \
-        qemu-utils && \
+    qemu-system-x86 \
+    qemu-utils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
