@@ -88,6 +88,7 @@ docker-compose --profile test up qemu
 ## Troubleshooting
 
 **Build fails?**
+
 ```bash
 make clean-all
 docker system prune -f
@@ -95,6 +96,7 @@ make build
 ```
 
 **Permission denied?**
+
 ```bash
 sudo make build
 # Or add your user to docker group
@@ -102,6 +104,7 @@ sudo usermod -aG docker $USER
 ```
 
 **QEMU not found?**
+
 ```bash
 # macOS
 brew install qemu

@@ -31,7 +31,7 @@ make clean build
 
 #### Enable Networking
 
-```
+```sh
 Networking support --->
     [*] Networking support
     Networking options --->
@@ -41,7 +41,7 @@ Networking support --->
 
 #### Enable USB Support
 
-```
+```sh
 Device Drivers --->
     [*] USB support --->
         <*> EHCI HCD (USB 2.0) support
@@ -51,7 +51,7 @@ Device Drivers --->
 
 #### Enable Filesystem Support
 
-```
+```sh
 File systems --->
     <*> The Extended 4 (ext4) filesystem
     <*> FUSE (Filesystem in Userspace) support
@@ -76,7 +76,7 @@ CONFIG_FEATURE_NAME=m
 
 ## BusyBox Customization
 
-### Using menuconfig
+### Using menuconfig busybox
 
 ```bash
 # Start BusyBox configuration menu
@@ -91,7 +91,7 @@ make clean build
 
 #### Enable All Applets
 
-```
+```sh
 Busybox Settings --->
     [*] Build BusyBox as a static binary (no shared libs)
 
@@ -100,7 +100,7 @@ Busybox Settings --->
 
 #### Network Utilities
 
-```
+```sh
 Networking Utilities --->
     [*] httpd
     [*] ftpd
@@ -111,7 +111,7 @@ Networking Utilities --->
 
 #### Text Editors
 
-```
+```sh
 Editors --->
     [*] vi
     [*] sed
@@ -207,7 +207,7 @@ LABEL my-custom-entry
 
 Common kernel boot parameters:
 
-```
+```sh
 quiet           # Suppress most boot messages
 loglevel=7      # Verbose kernel messages
 console=ttyS0   # Serial console output

@@ -140,7 +140,7 @@ test_new_feature() {
 
 Use clear, descriptive commit messages:
 
-```
+```sh
 Short summary (50 chars or less)
 
 More detailed explanatory text if needed. Wrap at 72 characters.

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-11-20
 
 ### Added
+
 - Initial release
 - Basic Linux distribution build from scratch
 - Linux kernel compilation
@@ -17,5 +18,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker build support
 - ISO image generation
 
-[Unreleased]: https://github.com/yourusername/handbuilt-linux/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/yourusername/handbuilt-linux/releases/tag/v1.0.0
