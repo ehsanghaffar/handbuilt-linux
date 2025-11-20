@@ -18,7 +18,7 @@ ARG LINUX_VERSION=master
 ARG BUSYBOX_VERSION=master
 ARG SYSLINUX_VERSION=6.04-pre1
 ARG DEBIAN_FRONTEND=noninteractive
-ARG BUILD_JOBS=auto
+ARG BUILD_JOBS=
 
 # Add metadata labels
 LABEL maintainer="handbuilt-linux-project"
@@ -149,7 +149,11 @@ COPY busybox.config /build/busybox/.config
 
 # Build and install BusyBox
 WORKDIR /build/busybox
-RUN make oldconfig && \
+RUN if [ -f .config ]; then \
+        make olddefconfig; \
+    else \
+        make defconfig; \
+    fi && \
     make -j"${BUILD_JOBS:-$(nproc)}" && \
     make CONFIG_PREFIX=/build/initramfs install && \
     strip /build/initramfs/bin/busybox
