@@ -6,8 +6,10 @@
 
 set -euo pipefail
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
+readonly SCRIPT_DIR
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_DIR
+PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
 
 readonly GREEN='\033[0;32m'
 readonly BLUE='\033[0;34m'
